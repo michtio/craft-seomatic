@@ -89,7 +89,17 @@ class EmptyCoalesceUnitTest extends Unit
         $this->assertSame('bar', $this->render('{{ obj ??? "bar" }}', ['obj' => new EmptyCoalesceCounter('')]));
         $this->assertSame('bar', $this->render('{{ items ??? "bar" }}', ['items' => new \ArrayObject()]));
         $this->assertSame('1,x,3', $this->render('{{ [1, "", 3]|map(v => v ??? "x")|join(",") }}'));
-        $this->assertSame('null', $this->render('{{ (woof ??? "") is null ? "null" : "not null" }}'));
+    }
+
+    /**
+     * When every operand is empty, the last operand should be returned as-is
+     */
+    public function testEmptyFallbackIsReturnedAsIs()
+    {
+        $this->assertSame('array', $this->render('{{ (woof ??? []) is iterable ? "array" : "null" }}'));
+        $this->assertSame('0', $this->render('{{ (woof ??? "" ??? items)|length }}', ['items' => new \ArrayObject()]));
+        $this->assertSame('string', $this->render('{{ (woof ??? "") is same as("") ? "string" : "null" }}'));
+        $this->assertSame('null', $this->render('{{ (woof ??? null) is null ? "null" : "not null" }}'));
     }
 
     // Protected Methods
